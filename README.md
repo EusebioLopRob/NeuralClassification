@@ -1,7 +1,7 @@
 # 🧠 NeuralClassification
 
 JavaScript-based implementation of a Neural Network model adapted from MATLAB code, tailored for use in a web application environment.
-
+The original Neural Network was created and trained in MATLAB by [github user ha15224](https://github.com/ha15224).
 This project enables classification tasks by processing time-series player data and predicting a classification score using a fully connected feedforward neural network. 
 It includes both the core neural network implementation and a controller module that prepares real-world data and applies the model.
 
