@@ -25,13 +25,18 @@ This module contains the implementation of the neural network, including:
   - `tansig` activation for hidden layers
   - Normalized output layer
 
-#### 🔧 Main function:
+#### 🔧 Main functions:
 ```js
 neural_net(rawInput: number[]): Promise<number>
 ```
-
 - Accepts a raw input array of 14 delta values (representing score changes over time)
 - Outputs a normalized classification value (typically scaled between 0 and 1+)
+
+```js
+compute_complete(incrementVec: number[], numUnions: number): Promise<number>
+```
+- Enhances the accuracy of the prediction calculated by the algorithm adding another layer of computation called "Plan B"
+- Internally calls neural_net function acting as the entrance point to `neural.net.js` module
 
 ---
 
@@ -47,6 +52,7 @@ This module acts as a controller that orchestrates the use of the neural network
   - Individual classification values
   - A top 10 classification list
   - Union threshold (cut-off benchmark)
+  - Plan B used or not
 
 #### 🔧 Main function:
 ```js
