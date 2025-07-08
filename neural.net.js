@@ -99,7 +99,50 @@ function neural_net(rawInput) {
     });
 }
 
+function compute_complete(incrementVec, numUnions){
+    return new Promise(async (resolve, reject) => {
+        try{
+            //Input array is forced valid at this point
+
+            //Step 1: Convert cut increments to 7 day-increments by summing pairs
+            const dayIncrements = [];
+            for (let i = 0; i < 14; i += 2) {
+                dayIncrements.push(incrementVec[i] + incrementVec[i + 1]);
+            }
+
+            //% Step 2: Sort increments from smallest to largest
+            const sortedDayIncrements = dayIncrements.sort((a, b) => a - b);
+
+            //Step 3: Compute total weekly increment
+            const totalWeeklyIncrement = dayIncrements.reduce((sum, value) => sum + value, 0);
+
+            //Step 4 : Compute Neutal Net Prediction
+            let prediction = await neural_net(incrementVec);
+            let planBUsed = false;
+
+            //Step 5: Check if PLAN B conditions are met
+            const condition1 = numUnions > 0;
+            const condition2 = totalWeeklyIncrement > 1000;
+            const condition3 = sortedDayIncrements.slice(0, 3).reduce((sum, val) => sum + val, 0) > 600;
+            const condition4 = sortedDayIncrements.slice(0, 3).every(val => val < 300);
+            const condition5 = sortedDayIncrements[0] > 100;
+            const condition6 = prediction < 4;
+
+            if (condition1 && condition2 && condition3 && condition4 && condition5 && condition6){
+                //Use plan B
+                const planB_average = sortedDayIncrements.slice(2, 5).reduce((sum, val) => sum + val, 0)/3;
+                const weekly_estimate = planB_average * 7;
+                prediction = Math.min(10, (weekly_estimate / 2500) * 10);
+                planBUsed = true;
+            }
+            resolve({prediction, planBUsed});
+        }catch(err){
+            reject(err);
+        }
+    });
+}
+
 
 module.exports = {
-    neural_net
+    compute_complete
 }

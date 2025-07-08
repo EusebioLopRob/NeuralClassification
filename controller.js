@@ -1,4 +1,4 @@
-const { neural_net } = require('../config/costants/neural.net.js');
+const { compute_complete } = require('./neural.net');
 
 function calculatePlayersClassification(SenkaDataId, filteredData, servernum, servermame){
     return new Promise( async (resolve, reject) => {
@@ -6,14 +6,16 @@ function calculatePlayersClassification(SenkaDataId, filteredData, servernum, se
             const playerDeltaDataset = await generatePlayersDeltaSataset(filteredData, servernum);
             const filteredDataCopy = JSON.parse(JSON.stringify(filteredData));
             for await (const [index, player] of playerDeltaDataset.entries()) {
-                let classificationValue = await neural_net(forceValidArray(player.data));
-                filteredDataCopy.players[index].classification = classificationValue < 0? 0 : classificationValue;
+                let numUnions = filteredDataCopy.players[index].unionData? filteredDataCopy.players[index].unionData.union : 0;
+                let computeResult = await compute_complete(forceValidArray(player.data), numUnions);
+                filteredDataCopy.players[index].classification = computeResult.prediction < 0? 0 : computeResult.prediction;
+                filteredDataCopy.players[index].planB = computeResult.planBUsed;
             }
             filteredDataCopy.neuralReady = true;
             let classifications = findUnionThreshold(filteredDataCopy.players);
             filteredDataCopy.unionThreshold = classifications[4];
             filteredDataCopy.top10Classification = classifications.slice(0, 10);
-            await SenkaFiltered.updateOne({_id: SenkaDataId},{filteredData: filteredDataCopy});
+            await SenkasuFiltered.updateOne({_id: SenkaDataId},{filteredData: filteredDataCopy});
             await PostLog('NEURAL NET', `Classification data generated for ${servermame}`, null);
             resolve();
         }catch(err){
